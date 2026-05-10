@@ -64,6 +64,13 @@ export default {
 	fetch(request: Request, env: Env, ctx: ExecutionContext) {
 		const url = new URL(request.url);
 
+		// Auth check: require ?token=<MCP_AUTH_TOKEN> on every request
+		const providedToken = url.searchParams.get("token");
+		const expectedToken = (env as any).MCP_AUTH_TOKEN;
+		if (!providedToken || !expectedToken || providedToken !== expectedToken) {
+			return new Response("Unauthorized", { status: 401 });
+		}
+
 		if (url.pathname === "/mcp") {
 			return MyMCP.serve("/mcp").fetch(request, env, ctx);
 		}
